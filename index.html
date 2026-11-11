@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steal An Egg - Secret Items & Pets</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Rubik for gaming typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            rubik: ['Rubik', 'sans-serif'],
+            inter: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              gold: '#F59E0B',
+              yellow: '#FACC15',
+              dark: '#0B111E',
+              darker: '#060A12',
+              card: '#111B2B',
+              cardHover: '#162438',
+              accent: '#38BDF8',
+              green: '#22C55E'
+            }
+          },
+          animation: {
+            'float': 'floating 3s ease-in-out infinite',
+            'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'glow': 'glowing 2s infinite alternate',
+          },
+          keyframes: {
+            floating: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-7px)' },
+            },
+            glowing: {
+              '0%': { boxShadow: '0 0 10px rgba(245, 158, 11, 0.3)' },
+              '100%': { boxShadow: '0 0 25px rgba(245, 158, 11, 0.8)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #16241b;
+      min-height: 100vh;
+      color: #FFFFFF;
+      font-family: 'Inter', 'Rubik', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Dedicated fixed blurred background layer (prevents nested backdrop-filter black artifacts) */
+    .fixed-bg-layer {
+      position: fixed;
+      inset: -24px;
+      z-index: -1;
+      background:
+        linear-gradient(180deg, rgba(10, 16, 14, 0.22) 0%, rgba(8, 12, 10, 0.38) 100%),
+        url('https://i.postimg.cc/Vk3xS0Sz/Znimok-ekrana-2026-11-11-o-22-45-22.png') no-repeat center center / cover;
+      filter: blur(8px);
+      transform: translateZ(0);
+      pointer-events: none;
+    }
+
+    /* Custom smooth scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1018;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #263345;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f5b800;
+    }
+
+    /* Translucent frosted-glass card matching screenshot */
+    .item-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+    }
+    .item-card:hover {
+      transform: translateY(-4px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
+      border-color: rgba(255, 255, 255, 0.48);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    }
+    .item-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Exact yellow-gold primary button from video */
+    .btn-gold {
+      background: #f5b800;
+      color: #111827;
+      box-shadow: 0 4px 14px rgba(245, 184, 0, 0.25);
+      transition: all 0.18s ease;
+    }
+    .btn-gold:hover {
+      background: #ffca28;
+      box-shadow: 0 6px 18px rgba(245, 184, 0, 0.4);
+    }
+    .btn-gold:active {
+      transform: scale(0.98);
+    }
+
+    /* Exact dark slate cancel button from video */
+    .btn-cancel {
+      background: #333c4a;
+      color: #F3F4F6;
+      transition: all 0.18s ease;
+    }
+    .btn-cancel:hover {
+      background: #3f4959;
+    }
+    .btn-cancel:active {
+      transform: scale(0.98);
+    }
+
+    /* Golden glowing input border like frame 00:02 */
+    .input-gold-glow {
+      background: #0d1219;
+      border: 2px solid #f5b800;
+      box-shadow: 0 0 12px rgba(245, 184, 0, 0.28);
+    }
+    .input-gold-glow:focus {
+      border-color: #ffd54f;
+      box-shadow: 0 0 16px rgba(245, 184, 0, 0.45);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-amber-400 selection:text-black min-h-screen flex flex-col justify-between">
+  <div class="fixed-bg-layer" aria-hidden="true"></div>
+  <div class="min-h-screen flex flex-col justify-between w-full">
+
+  <!-- TOP HEADER / HERO SECTION -->
+  <header class="w-full max-w-2xl mx-auto px-4 pt-7 pb-4 flex flex-col items-center text-center">
+    
+    <!-- "NEW UPDATE" Yellow Pill Badge (Exact match to screenshot) -->
+    <div class="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-gradient-to-b from-[#ffd400] to-[#f5b300] text-[#261400] font-extrabold text-xs sm:text-[13px] tracking-[0.07em] uppercase mb-4 shadow-[0_4px_14px_rgba(245,179,0,0.35)]">
+      <span class="text-sm leading-none">🥚</span>
+      <span>NEW UPDATE</span>
+    </div>
+
+    <!-- Official STEAL AN EGG Logo -->
+    <div class="relative w-64 sm:w-72 md:w-80 flex items-center justify-center mb-2">
+      <img 
+        src="https://i.postimg.cc/sgVBk1jq/Znimok-ekrana-2026-11-11-o-22-36-02.png" 
+        alt="Steal An Egg Logo" 
+        class="w-full h-auto object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)]"
+        onerror="this.src='https://placehold.co/400x120/111827/FACC15?text=STEAL+AN+EGG'"
+      >
+    </div>
+
+    <!-- Subtitle Description Text -->
+    <p class="text-slate-100/90 text-sm sm:text-[15px] max-w-md mt-2 font-normal px-2 leading-relaxed">
+      Collect the rarest eggs, secret pets, legendary treadmills and trails — all exclusive items in one place!
+    </p>
+
+    <!-- Status Bar (Status: Online | Online Users: 644 - Frosted Rounded Boxes) -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mt-4 text-xs sm:text-[14px] font-bold">
+      <!-- Status Box -->
+      <div class="flex items-center gap-1.5 px-5 py-2.5 sm:px-6 rounded-[14px] bg-white/[0.11] border border-white/[0.22] text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] backdrop-blur-md">
+        <span class="text-white">Status:</span>
+        <span class="text-[#4ade80]">Online</span>
+      </div>
+
+      <!-- Online Counter Box -->
+      <div class="flex items-center gap-1.5 px-5 py-2.5 sm:px-6 rounded-[14px] bg-white/[0.11] border border-white/[0.22] text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] backdrop-blur-md">
+        <span class="text-white">Online Users:</span>
+        <span id="liveUsersCount" class="text-[#4ade80]">644</span>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- MAIN CONTENT: GRID OF SECRET ITEMS -->
+  <main class="w-full max-w-2xl md:max-w-4xl mx-auto px-4 pb-16 flex-1">
+    
+    <!-- Section Heading (Exact match to video) -->
+    <div class="text-center mt-2 mb-5">
+      <h2 class="text-[22px] sm:text-2xl font-bold text-white tracking-tight">All Secret Items</h2>
+      <p class="text-xs sm:text-sm text-slate-200/80 mt-1 font-normal">
+        <span id="itemCountDisplay">20</span> exclusive items — click on any item to get it!
+      </p>
+    </div>
+
+    <!-- Items Grid (2 columns on mobile like video, 3-4 on larger screens) -->
+    <div id="itemsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <!-- Cards will be populated by JavaScript -->
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full py-5 text-center text-xs text-slate-300/60">
+    <div class="max-w-2xl mx-auto px-4">
+      <p>© 2026 Steal An Egg. All rights reserved.</p>
+    </div>
+  </footer>
+
+  </div>
+
+  <!-- ==================== MODAL OVERLAY (Exact Video Flow) ==================== -->
+  <div id="claimModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    
+    <!-- Modal Card -->
+    <div class="relative w-full max-w-[360px] bg-[#151c26] border border-white/10 rounded-3xl p-6 shadow-[0_24px_60px_rgba(0,0,0,0.85)] text-center text-white transform scale-95 transition-transform duration-200" id="modalBox">
+      
+      <!-- Modal Brand Logo -->
+      <div class="w-44 mx-auto mb-5">
+        <img 
+          src="https://i.postimg.cc/sgVBk1jq/Znimok-ekrana-2026-11-11-o-22-36-02.png" 
+          alt="Steal An Egg" 
+          class="w-full h-auto object-contain"
+        >
+      </div>
+
+      <!-- ================= STEP 1: ENTER USERNAME (Frame 00:02) ================= -->
+      <div id="step1" class="modal-step">
+        <form onsubmit="handleStep1Submit(event)" class="space-y-4">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="usernameInput" 
+              required 
+              placeholder="Enter Your Username" 
+              class="input-gold-glow w-full text-white placeholder-slate-400 rounded-xl py-3 px-4 text-center text-sm sm:text-[15px] font-medium outline-none transition-all"
+              autocomplete="off"
+            >
+            <p id="usernameError" class="text-red-400 text-xs mt-1.5 hidden">Please enter your username</p>
+          </div>
+
+          <!-- Two Side-by-Side Buttons (Next Step | Cancel) -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <button type="submit" class="btn-gold py-3 px-4 rounded-xl font-bold text-sm">
+              Next Step
+            </button>
+            <button type="button" onclick="closeModal()" class="btn-cancel py-3 px-4 rounded-xl font-bold text-sm">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ================= STEP 2: CONFIRM USER PROFILE (Frame 00:03) ================= -->
+      <div id="step2" class="modal-step hidden">
+        
+        <!-- Circular User Avatar -->
+        <div class="flex flex-col items-center justify-center my-2">
+          <div class="w-24 h-24 rounded-full p-0.5 border-2 border-white/85 bg-slate-800 shadow-lg overflow-hidden">
+            <img 
+              id="userAvatarImg" 
+              src="" 
+              alt="Avatar" 
+              class="w-full h-full rounded-full object-cover"
+            >
+          </div>
+
+          <p class="text-base sm:text-lg font-bold text-white mt-3.5" id="displayUsername">@aFz_Tiara</p>
+        </div>
+
+        <!-- Two Side-by-Side Buttons (Continue | Cancel) -->
+        <div class="grid grid-cols-2 gap-3 pt-4">
+          <button onclick="handleStep2Continue()" class="btn-gold py-3 px-4 rounded-xl font-bold text-sm">
+            Continue
+          </button>
+          <button onclick="closeModal()" class="btn-cancel py-3 px-4 rounded-xl font-bold text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= STEP 3: SPINNER + TRANSFERRING (Frame 00:04 -> 00:05) ================= -->
+      <div id="step3" class="modal-step hidden">
+        
+        <!-- Sub-state A: Golden Spinner (Frame 00:04) -->
+        <div id="spinnerPhase" class="py-2">
+          <div class="w-11 h-11 mx-auto my-3 rounded-full border-4 border-amber-400/20 border-t-[#f5b800] animate-spin"></div>
+          <p class="text-sm text-slate-200 font-medium leading-snug mt-4">
+            Transferring <span id="spinnerItemName" class="font-semibold text-white">Astral Treadmill</span> Access to
+          </p>
+          <p class="text-sm font-bold text-white mt-0.5" id="spinnerUser">aFz_Tiara</p>
+        </div>
+
+        <!-- Sub-state B: Avatar + Item Badge + Progress Bar (Frame 00:05) -->
+        <div id="progressPhase" class="hidden">
+          <!-- Avatar with top-right small item circle badge -->
+          <div class="relative w-24 h-24 mx-auto my-2">
+            <div class="w-24 h-24 rounded-full border-2 border-white/85 bg-slate-800 overflow-hidden shadow-lg">
+              <img 
+                id="transferUserAvatar" 
+                src="" 
+                class="w-full h-full rounded-full object-cover"
+              >
+            </div>
+            <!-- Small circular item badge at top-right like frame 00:05 -->
+            <div class="absolute -top-1 -right-1 w-9 h-9 rounded-full bg-white border-2 border-slate-800 p-1 shadow-md flex items-center justify-center">
+              <img id="transferItemBadgeImg" src="" class="w-full h-full object-contain">
+            </div>
+          </div>
+
+          <!-- Horizontal Golden Progress Bar -->
+          <div class="w-full bg-[#2a3342] rounded-full h-2.5 overflow-hidden mt-4 mb-3">
+            <div 
+              id="progressBar" 
+              class="h-full rounded-full bg-[#f5b800] transition-all duration-150 ease-out" 
+              style="width: 10%;"
+            ></div>
+          </div>
+
+          <!-- Transfer Status Text with Gold Item & Green Username -->
+          <p class="text-xs sm:text-sm font-medium text-slate-200 leading-snug">
+            Transferring <span id="transferItemName" class="font-bold text-[#f5b800]">Astral Treadmill</span> Access to
+          </p>
+          <p class="text-sm font-bold text-[#22c55e] mt-0.5" id="transferTargetUser">@aFz_Tiara</p>
+        </div>
+
+        <!-- Two Side-by-Side Buttons (Continue | Cancel) -->
+        <div class="grid grid-cols-2 gap-3 pt-5">
+          <button id="step3ContinueBtn" onclick="handleCompleteClaim()" class="btn-gold py-3 px-4 rounded-xl font-bold text-sm">
+            Continue
+          </button>
+          <button onclick="closeModal()" class="btn-cancel py-3 px-4 rounded-xl font-bold text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= STEP 4: COMPLETED ================= -->
+      <div id="step4" class="modal-step hidden">
+        <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border-2 border-[#22c55e] text-[#22c55e] flex items-center justify-center text-3xl mb-3">
+          <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h3 class="text-lg font-bold text-white">Transfer Complete!</h3>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1.5 mb-5 leading-relaxed">
+          <strong class="text-[#f5b800]" id="finalItemName">Item</strong> has been sent to <strong class="text-[#22c55e]" id="finalUser">@User</strong>! Open Roblox to claim it in-game.
+        </p>
+
+        <button onclick="closeModal()" class="w-full btn-gold py-3 px-4 rounded-xl font-bold text-sm">
+          Done
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- IN-APP SOUND SYNTHESIZER (Web Audio API - No external audio URLs) -->
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playBeep(freq = 440, type = 'sine', duration = 0.1) {
+      try {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // audio muted or restricted
+      }
+    }
+
+    function playSuccessChime() {
+      playBeep(523.25, 'triangle', 0.15);
+      setTimeout(() => playBeep(659.25, 'triangle', 0.15), 120);
+      setTimeout(() => playBeep(783.99, 'triangle', 0.25), 240);
+    }
+  </script>
+
+  <!-- JAVASCRIPT: DATA & INTERACTIONS -->
+  <script>
+    // Exact list of Items with user's provided URLs
+    const itemsData = [
+      {
+        id: 'spirit-guardian',
+        name: 'Spirit World Guardian',
+        img: 'https://i.postimg.cc/ZYpC06Ch/spirit-world-guardian-(1).webp'
+      },
+      {
+        id: 'bone-emperor',
+        name: 'Bone Emperor',
+        img: 'https://i.postimg.cc/kGQ4ZPkJ/1000027620-removebg-preview.png'
+      },
+      {
+        id: 'secret-trex',
+        name: 'Secret T-Rex',
+        img: 'https://i.postimg.cc/QN1HVcHM/Znimok-ekrana-2026-11-11-o-22-36-35.png'
+      },
+      {
+        id: 'astral-treadmill',
+        name: 'Astral Treadmill',
+        img: 'https://i.postimg.cc/0jYQ31L9/alien-treadmill.webp'
+      },
+      {
+        id: 'angelic-treadmill',
+        name: 'Angelic Treadmill',
+        img: 'https://i.postimg.cc/BbT6yfd6/angelic-treadmill-png.webp'
+      },
+      {
+        id: 'aetheron-egg',
+        name: 'Aetheron Egg',
+        img: 'https://i.postimg.cc/RCKNqwqs/Aetheron-Egg-png.webp'
+      },
+      {
+        id: 'archangel-egg',
+        name: 'Archangel Egg',
+        img: 'https://i.postimg.cc/sxdxwg0r/Arch-Angel-png.webp'
+      },
+      {
+        id: 'treadmill-x200',
+        name: 'Treadmill x200',
+        img: 'https://i.postimg.cc/T1VwSvZL/SPEED.webp'
+      },
+      {
+        id: 'eternal-mosasaurus',
+        name: 'Eternal Mosasaurus',
+        img: 'https://i.postimg.cc/bYksd1dg/pet-abyssjaw.webp'
+      },
+      {
+        id: 'cosmic-dragon',
+        name: 'Cosmic Dragon',
+        img: 'https://i.postimg.cc/SR6s5bwF/cosmic-dragon.png'
+      },
+      {
+        id: 'cursed-monarch',
+        name: 'Cursed Monarch',
+        img: 'https://i.postimg.cc/T2gphnhS/Cursed-Monarch.webp'
+      },
+      {
+        id: 'divine-trail',
+        name: 'Divine Trail',
+        img: 'https://i.postimg.cc/DfL8m183/divine-trail.png'
+      },
+      {
+        id: 'experiment-001',
+        name: 'Experiment 001',
+        img: 'https://i.postimg.cc/L5tX7FrM/Experiment-001-png.webp'
+      },
+      {
+        id: 'guardian-treadmill',
+        name: 'Guardian Treadmill',
+        img: 'https://i.postimg.cc/wxL73D3F/guardian-treadmill.webp'
+      },
+      {
+        id: 'kitsune',
+        name: 'Kitsune World Spirit',
+        img: 'https://i.postimg.cc/tRWY7FYb/kitsune-png.webp'
+      },
+      {
+        id: 'cyber-mantis',
+        name: 'Mecha Mantis',
+        img: 'https://i.postimg.cc/fWmJkYkg/mantis.webp'
+      },
+      {
+        id: 'nebuloth-kraken',
+        name: 'Nebuloth Kraken',
+        img: 'https://i.postimg.cc/L5tX7Fr5/nebuloth-kraken-512.avif'
+      },
+      {
+        id: 'neon-alien-trail',
+        name: 'Neon Alien Trail',
+        img: 'https://i.postimg.cc/mkYDqW0x/Neon-Alien-Trail-Cosmic-Tiles.png'
+      },
+      {
+        id: 'pet-jellynova',
+        name: 'Pet Jellynova',
+        img: 'https://i.postimg.cc/vTrBjwCN/pet-jellynova.webp'
+      },
+      {
+        id: 'royal-sky-whale',
+        name: 'Royal Sky Whale',
+        img: 'https://i.postimg.cc/3rmdW2d7/Royal-Sky-Whale-with-Floating-Island.webp'
+      }
+    ];
+
+    // State Variables
+    let selectedItem = null;
+    let currentUser = '';
+    let transferInterval = null;
+    let spinnerTimeout = null;
+
+    // Render Clean Frosted-Glass Cards matching screenshot
+    function renderItems() {
+      const grid = document.getElementById('itemsGrid');
+      grid.innerHTML = '';
+
+      document.getElementById('itemCountDisplay').innerText = itemsData.length;
+
+      itemsData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card rounded-2xl px-3 pt-4 pb-4 sm:px-4 sm:pt-5 sm:pb-5 flex flex-col items-center justify-between text-center cursor-pointer group aspect-[1/1.22]';
+        card.setAttribute('onclick', `openModal('${item.id}')`);
+
+        card.innerHTML = `
+          <!-- Centered Large Item Artwork -->
+          <div class="w-full flex-1 flex items-center justify-center overflow-hidden">
+            <img 
+              src="${item.img}" 
+              alt="${item.name}" 
+              class="w-[84%] max-h-36 sm:max-h-44 object-contain filter drop-shadow-[0_8px_14px_rgba(0,0,0,0.4)] group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+              onerror="this.src='https://placehold.co/200x200/1e293b/f5b800?text=${encodeURIComponent(item.name)}'"
+            >
+          </div>
+
+          <!-- Clean Centered Item Title -->
+          <h3 class="font-bold text-white text-[13px] sm:text-[15px] tracking-tight mt-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.65)] line-clamp-1">
+            ${item.name}
+          </h3>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Modal Opening
+    function openModal(itemId) {
+      playBeep(520, 'triangle', 0.08);
+      selectedItem = itemsData.find(i => i.id === itemId);
+      if (!selectedItem) return;
+
+      goToStep(1);
+
+      const modal = document.getElementById('claimModal');
+      const box = document.getElementById('modalBox');
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+        document.getElementById('usernameInput').focus();
+      }, 10);
+    }
+
+    // Modal Closing
+    function closeModal() {
+      playBeep(350, 'sine', 0.07);
+      if (transferInterval) clearInterval(transferInterval);
+      if (spinnerTimeout) clearTimeout(spinnerTimeout);
+
+      const modal = document.getElementById('claimModal');
+      const box = document.getElementById('modalBox');
+
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // Step Switcher Helper
+    function goToStep(stepNumber) {
+      document.querySelectorAll('.modal-step').forEach(step => step.classList.add('hidden'));
+      document.getElementById(`step${stepNumber}`).classList.remove('hidden');
+    }
+
+    // Pool of user-provided Roblox avatars
+    const userAvatars = [
+      'https://i.postimg.cc/qBhsgq3v/Znimok-ekrana-2026-11-11-o-22-56-13.png',
+      'https://i.postimg.cc/gcCvhpVF/Znimok-ekrana-2026-11-11-o-22-56-18.png',
+      'https://i.postimg.cc/NG31Xt6v/Znimok-ekrana-2026-11-11-o-22-56-21.png',
+      'https://i.postimg.cc/Vsxjtwqc/Znimok-ekrana-2026-11-11-o-22-56-26.png',
+      'https://i.postimg.cc/44DzcG6g/Znimok-ekrana-2026-11-11-o-22-56-31.png',
+      'https://i.postimg.cc/XNGfXqCn/Znimok-ekrana-2026-11-11-o-22-56-34.png',
+      'https://i.postimg.cc/ZYB80ndK/Znimok-ekrana-2026-11-11-o-22-56-40.png',
+      'https://i.postimg.cc/KckP4jMZ/Znimok-ekrana-2026-11-11-o-22-56-44.png',
+      'https://i.postimg.cc/XNGfXqCj/Znimok-ekrana-2026-11-11-o-22-56-48.png',
+      'https://i.postimg.cc/dQk2D3yQ/Znimok-ekrana-2026-11-11-o-22-56-52.png',
+      'https://i.postimg.cc/nVj4MrDL/Znimok-ekrana-2026-11-11-o-22-56-57.png'
+    ];
+
+    // Pick a Roblox avatar from the provided collection based on username
+    function getUserAvatarUrl(username) {
+      const normalized = username.toLowerCase();
+      let hash = 0;
+      for (let i = 0; i < normalized.length; i++) {
+        hash = ((hash << 5) - hash) + normalized.charCodeAt(i);
+        hash |= 0;
+      }
+      const index = Math.abs(hash) % userAvatars.length;
+      return userAvatars[index];
+    }
+
+    // Fallback SVG avatar if an external image fails to load
+    function getFallbackAvatarSvg(username) {
+      const seed = username.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      const hairColors = ['#18181b', '#451a03', '#fef08a', '#7c2d12', '#1e293b'];
+      const shirtColors = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#ea580c'];
+      const hairColor = hairColors[seed % hairColors.length];
+      const shirtColor = shirtColors[(seed >> 1) % shirtColors.length];
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+        <rect width="120" height="120" fill="#991b1b"/>
+        <!-- Shoulders -->
+        <rect x="26" y="84" width="68" height="40" rx="14" fill="${shirtColor}"/>
+        <!-- Neck -->
+        <rect x="50" y="72" width="20" height="16" fill="#fde68a"/>
+        <!-- Roblox Head -->
+        <rect x="34" y="28" width="52" height="50" rx="14" fill="#fef08a"/>
+        <!-- Hair / Cap -->
+        <path d="M32 42 C32 22, 88 22, 88 42 L88 52 L80 42 L40 42 L32 52 Z" fill="${hairColor}"/>
+        <!-- Eyes -->
+        <circle cx="49" cy="52" r="3.5" fill="#111827"/>
+        <circle cx="71" cy="52" r="3.5" fill="#111827"/>
+        <!-- Smile -->
+        <path d="M51 64 Q60 71 69 64" stroke="#111827" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    // STEP 1 -> STEP 2 (Frame 00:02 -> 00:03)
+    function handleStep1Submit(e) {
+      e.preventDefault();
+      const input = document.getElementById('usernameInput');
+      const val = input.value.trim().replace(/^@+/, '');
+      const err = document.getElementById('usernameError');
+
+      if (!val) {
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+      currentUser = val;
+
+      playBeep(650, 'sine', 0.1);
+
+      document.getElementById('displayUsername').innerText = `@${currentUser}`;
+      const avatarEl = document.getElementById('userAvatarImg');
+      avatarEl.onerror = () => {
+        avatarEl.onerror = null;
+        avatarEl.src = getFallbackAvatarSvg(currentUser);
+      };
+      avatarEl.src = getUserAvatarUrl(currentUser);
+
+      goToStep(2);
+    }
+
+    // STEP 2 -> STEP 3 (Frame 00:03 -> 00:04 Spinner -> 00:05 Progress Bar)
+    function handleStep2Continue() {
+      playBeep(700, 'triangle', 0.1);
+
+      const spinnerPhase = document.getElementById('spinnerPhase');
+      const progressPhase = document.getElementById('progressPhase');
+      const continueBtn = document.getElementById('step3ContinueBtn');
+
+      // Reset phases: Show Spinner first (Frame 00:04)
+      spinnerPhase.classList.remove('hidden');
+      progressPhase.classList.add('hidden');
+      document.getElementById('spinnerItemName').innerText = selectedItem.name;
+      document.getElementById('spinnerUser').innerText = currentUser;
+
+      // Setup Progress Phase (Frame 00:05)
+      document.getElementById('transferItemName').innerText = selectedItem.name;
+      document.getElementById('transferTargetUser').innerText = `@${currentUser}`;
+      document.getElementById('transferUserAvatar').src = document.getElementById('userAvatarImg').src;
+      document.getElementById('transferItemBadgeImg').src = selectedItem.img;
+
+      const pBar = document.getElementById('progressBar');
+      pBar.style.width = '8%';
+
+      continueBtn.disabled = true;
+      continueBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+      goToStep(3);
+
+      // Transition from Spinner (00:04) to Progress Bar (00:05) after 1.1s
+      spinnerTimeout = setTimeout(() => {
+        spinnerPhase.classList.add('hidden');
+        progressPhase.classList.remove('hidden');
+
+        let progress = 8;
+        transferInterval = setInterval(() => {
+          progress += Math.floor(Math.random() * 6) + 4;
+          if (progress > 100) progress = 100;
+
+          pBar.style.width = `${progress}%`;
+
+          if (progress >= 100) {
+            clearInterval(transferInterval);
+            playSuccessChime();
+            continueBtn.disabled = false;
+            continueBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+          }
+        }, 120);
+      }, 1100);
+    }
+
+    // STEP 3 -> STEP 4 Final claim confirmation
+    function handleCompleteClaim() {
+      if (document.getElementById('step3ContinueBtn').disabled) return;
+      playSuccessChime();
+      document.getElementById('finalItemName').innerText = selectedItem.name;
+      document.getElementById('finalUser').innerText = `@${currentUser}`;
+      goToStep(4);
+    }
+
+    // Dynamic Online Users Counter Fluctuations
+    function startLiveUserCounter() {
+      const el = document.getElementById('liveUsersCount');
+      let base = 644;
+      setInterval(() => {
+        const delta = Math.floor(Math.random() * 5) - 2;
+        base = Math.max(610, Math.min(720, base + delta));
+        el.innerText = base;
+      }, 4500);
+    }
+
+    // Initialize application on load
+    window.onload = function () {
+      renderItems();
+      startLiveUserCounter();
+    };
+  </script>
+</body>
+</html>
